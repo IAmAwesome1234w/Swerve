@@ -80,7 +80,17 @@ public class SwerveModule extends SubsystemBase {
      {
       return new SwerveModuleState(getDriveMotorVelocity(), new Rotation2d(getTurnMotorPosition()));
      }
-    
+     public void setState(SwerveModuleState state)
+     {
+        state = SwerveModuleState.optimize(state, getSwerveState().angle);
+        driveMotor.set(state.speedMetersPerSecond / SwerveConstants.DRIVETRAIN_MAX_SPEED);
+        turnMotor.set(turnPIDController.calculate(getTurnMotorPosition(), state.angle.getRadians()));
+     }
+    public void stop()
+    {
+      driveMotor.set(0);
+      turnMotor.set(0);
+    }
      
 
   @Override
