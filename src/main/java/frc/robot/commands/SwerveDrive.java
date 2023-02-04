@@ -24,15 +24,18 @@ public class SwerveDrive extends CommandBase {
   @Override
   public void execute() {
       RobotContainer.drivetrain.swerveDrive(
-        RobotContainer.controller.getLeftX(),
-        RobotContainer.controller.getLeftY(),
-        
-      )
+        -RobotContainer.controller.getLeftY(),
+        -RobotContainer.controller.getLeftX(),
+        -RobotContainer.controller.getRightX(),
+        true,
+        true);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    RobotContainer.drivetrain.stopModules();
+  }
 
   // Returns true when the command should end.
   @Override

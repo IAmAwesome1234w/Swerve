@@ -13,6 +13,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConstants;
 
@@ -54,24 +56,21 @@ public class Drivetrain extends SubsystemBase {
        SwerveConstants.RIGHT_BACK_OFFSET,
         false);
   
-  private Pigeon2 gyro = new Pigeon2(SwerveConstants.PIGEON_ID);
+  private ADIS16470_IMU gyro = new ADIS16470_IMU();
   private SlewRateLimiter front_limiter = new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
   private SlewRateLimiter side_limiter = new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
   private SlewRateLimiter turn_limiter =  new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
   public Drivetrain() {
-    
+
   }
   public void zeroHeading()
   {
-    gyro.setYaw(0);
+    gyro.reset();
   }
-  public void setHeading(Rotation2d angle)
-  {
-    gyro.setYaw(angle.getDegrees());
-  }
+  
   public double getHeading()
   {
-    return Math.IEEEremainder(gyro.getYaw(), 360);
+    return Math.IEEEremainder(gyro.getAngle(), 360);
   }
   public Rotation2d getHeadingRotation2d()
   {
@@ -81,9 +80,9 @@ public class Drivetrain extends SubsystemBase {
   {
     if(deadband)
     {
-      frontspeed = Math.abs(frontspeed) > 1.0 ? frontspeed : 0;
-      turnspeed = Math.abs(turnspeed) > 1.0 ? turnspeed: 0;
-      sidespeed = Math.abs(turnspeed) > 1.0 ? sidespeed: 0;
+      frontspeed = Math.abs(frontspeed) > 0.1 ? frontspeed : 0;
+      turnspeed = Math.abs(turnspeed) > 0.1 ? turnspeed: 0;
+      sidespeed = Math.abs(turnspeed) > 0.1 ? sidespeed: 0;
     }
     frontspeed = front_limiter.calculate(frontspeed) * SwerveConstants.TELE_DRIVE_MAX_ACCELERATION;
     sidespeed = side_limiter.calculate(sidespeed) * SwerveConstants.TELE_DRIVE_MAX_ACCELERATION;
@@ -107,7 +106,14 @@ public class Drivetrain extends SubsystemBase {
     left_back.setState(moduleStates[2]);
     right_back.setState(moduleStates[3]);
   }
-
+  public void stopModules()
+  {
+    left_front.stop();
+    right_front.stop();
+    left_back.stop();
+    right_back.stop();
+  }
+  
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
