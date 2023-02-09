@@ -8,10 +8,12 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenixpro.sim.ChassisReference;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.interfaces.Gyro;
@@ -60,8 +62,19 @@ public class Drivetrain extends SubsystemBase {
   private SlewRateLimiter front_limiter = new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
   private SlewRateLimiter side_limiter = new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ACCELERATION);
   private SlewRateLimiter turn_limiter =  new SlewRateLimiter(SwerveConstants.TELE_DRIVE_MAX_ANGULAR_ACCELERATION);
+  private SwerveDriveOdometry odometry = new SwerveDriveOdometry(SwerveConstants.DRIVE_KINEMATICS, getHeadingRotation2d(), new SwerveModulePosition[] {left_front.getPosition(), right_front.getPosition(), left_back.getPosition(), right_back.getPosition()});
+  private Pose2d pose = new Pose2d();
+ 
   public Drivetrain() {
 
+  }
+  public Pose2d getPose()
+  {
+    return odometry.getPoseMeters();
+  }
+  public void resetOdometry(Pose2d pose)
+  {
+    odometry.resetPosition(getHeadingRotation2d(), new SwerveModulePosition[] {left_front.getPosition(), right_front.getPosition(), left_back.getPosition(), right_back.getPosition()}, pose);
   }
   public void zeroHeading()
   {
@@ -116,6 +129,7 @@ public class Drivetrain extends SubsystemBase {
   
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    odometry.update(getHeadingRotation2d(), new SwerveModulePosition[] {left_front.getPosition(), right_front.getPosition(), left_back.getPosition(), right_back.getPosition()});
+      // This method will be called once per scheduler run
   }
 }
